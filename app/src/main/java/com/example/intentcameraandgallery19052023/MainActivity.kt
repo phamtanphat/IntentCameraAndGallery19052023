@@ -20,7 +20,8 @@ class MainActivity : AppCompatActivity() {
     private var btnGallery: Button? = null
     private var img: ImageView? = null
 
-    private var REQUEST_CODE_CAMERA = 123;
+    private var REQUEST_CODE_CAMERA = 123
+    private var REQUEST_CODE_GALLERY = 456
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -47,6 +48,26 @@ class MainActivity : AppCompatActivity() {
                 resultActivityCamera.launch(intent)
             }
         }
+
+        btnGallery?.setOnClickListener {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if (!shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    requestPermissions(
+                        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                        REQUEST_CODE_CAMERA
+                    )
+                } else {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    val uri = Uri.fromParts("package", packageName, null)
+                    intent.data = uri
+                    startActivity(intent)
+                }
+            } else {
+                val intent = Intent(Intent.ACTION_PICK)
+                intent.type = "image/*"
+                resultActivityGallery.launch(intent)
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -61,6 +82,13 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
                 resultActivityCamera.launch(intent)
             }
+        } else if (requestCode == REQUEST_CODE_GALLERY) {
+            val resultGalley = grantResults.getOrNull(0)
+            if (resultGalley == PackageManager.PERMISSION_GRANTED) {
+                val intent = Intent(Intent.ACTION_PICK)
+                intent.type = "image/*"
+                resultActivityGallery.launch(intent)
+            }
         }
     }
 
@@ -68,6 +96,13 @@ class MainActivity : AppCompatActivity() {
         if (it.resultCode == RESULT_OK && it.data != null) {
             val bitmap = it.data?.extras?.get("data") as Bitmap
             img?.setImageBitmap(bitmap)
+        }
+    }
+
+    private val resultActivityGallery = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == RESULT_OK && it.data != null) {
+            val uri = it.data?.data
+            img?.setImageURI(uri)
         }
     }
 }
