@@ -3,6 +3,7 @@ package com.example.intentcameraandgallery19052023
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
@@ -33,7 +34,8 @@ class MainActivity : AppCompatActivity() {
                     REQUEST_CODE_CAMERA
                 )
             } else {
-
+                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                resultActivityCamera.launch(intent)
             }
         }
     }
@@ -54,6 +56,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val resultActivityCamera = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-
+        if (it.resultCode == RESULT_OK && it.data != null) {
+            val bitmap = it.data?.extras?.get("data") as Bitmap
+            img?.setImageBitmap(bitmap)
+        }
     }
 }
