@@ -4,13 +4,15 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import androidx.appcompat.app.AppCompatActivity
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.Settings
 import android.widget.Button
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,10 +31,17 @@ class MainActivity : AppCompatActivity() {
 
         btnCamera?.setOnClickListener {
             if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(
-                    arrayOf(Manifest.permission.CAMERA),
-                    REQUEST_CODE_CAMERA
-                )
+                if (!shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+                    requestPermissions(
+                        arrayOf(Manifest.permission.CAMERA),
+                        REQUEST_CODE_CAMERA
+                    )
+                } else {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    val uri = Uri.fromParts("package", packageName, null)
+                    intent.data = uri
+                    startActivity(intent)
+                }
             } else {
                 val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
                 resultActivityCamera.launch(intent)
